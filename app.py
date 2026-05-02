@@ -447,7 +447,6 @@
 
 
 
-
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
@@ -507,47 +506,7 @@ if 'recipes_list' not in st.session_state:
 if 'selected_index' not in st.session_state:
     st.session_state.selected_index = None
 
-# --- СТРАНИЧНО МЕНЮ ---
-with st.sidebar:
-    st.title("👤 Профил")
-    if not st.session_state.logged_in:
-        st.info("Влезте, за да запазвате рецепти.")
-        auth_tab1, auth_tab2 = st.tabs(["Вход", "Регистрация"])
-        
-        with auth_tab1:
-            u_in = st.text_input("Потребител", key="u_login")
-            p_in = st.text_input("Парола", type="password", key="p_login")
-            if st.button("Влез", use_container_width=True):
-                if login_user(u_in, p_in):
-                    st.session_state.logged_in = True
-                    st.session_state.username = u_in
-                    st.rerun()
-                else:
-                    st.error("Грешно име или парола.")
-        
-        with auth_tab2:
-            u_reg = st.text_input("Нов потребител", key="u_reg")
-            p_reg = st.text_input("Нова парола", type="password", key="p_reg")
-            if st.button("Създай профил", use_container_width=True):
-                if add_user(u_reg, p_reg):
-                    st.success("Успешно! Сега влезте от таб 'Вход'.")
-                else:
-                    st.error("Името е заето.")
-    else:
-        st.success(f"Здравей, {st.session_state.username}!")
-        if st.button("Изход", use_container_width=True):
-            st.session_state.logged_in = False
-            st.session_state.username = ""
-            st.rerun()
-        
-        st.markdown("---")
-        st.subheader("📚 Моите рецепти")
-        my_data = get_saved_recipes(st.session_state.username)
-        for r in my_data:
-            with st.expander(r['recipe_name']):
-                st.write(r['recipe_content'])
-
-# --- ОСНОВЕН ИНТЕРФЕЙС ---
+# Прилагане на CSS
 def local_css(file_name):
     try:
         with open(file_name, encoding="utf-8") as f:
@@ -557,7 +516,55 @@ def local_css(file_name):
 
 local_css("style.css")
 
-# Инициализация на AI
+# --- ЛОГИКА ЗА ВХОД (ЦЕНТРАЛНО ЗА МОБИЛНИ) ---
+if not st.session_state.logged_in:
+    st.title("♻️ Zero-Waste AI Готвач")
+    st.subheader("🔐 Моля, влезте или се регистрирайте")
+    
+    auth_tab1, auth_tab2 = st.tabs(["Вход", "Регистрация"])
+    
+    with auth_tab1:
+        u_in = st.text_input("Потребител", key="u_login")
+        p_in = st.text_input("Парола", type="password", key="p_login")
+        if st.button("Влез", use_container_width=True):
+            if login_user(u_in, p_in):
+                st.session_state.logged_in = True
+                st.session_state.username = u_in
+                st.rerun()
+            else:
+                st.error("Грешно име или парола.")
+                
+    with auth_tab2:
+        u_reg = st.text_input("Нов потребител", key="u_reg")
+        p_reg = st.text_input("Нова парола", type="password", key="p_reg")
+        if st.button("Създай профил", use_container_width=True):
+            if u_reg and p_reg:
+                if add_user(u_reg, p_reg):
+                    st.success("Успешно! Сега влезте от таб 'Вход'.")
+                else:
+                    st.error("Името е заето.")
+    st.stop() # Спираме до тук, ако не е логнат
+
+# --- СТРАНИЧНО МЕНЮ (САМО ЗА ЛОГНАТИ) ---
+with st.sidebar:
+    st.title("👤 Профил")
+    st.success(f"Здравей, {st.session_state.username}!")
+    if st.button("Изход", use_container_width=True):
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+        st.rerun()
+    
+    st.markdown("---")
+    st.subheader("📚 Моите рецепти")
+    my_data = get_saved_recipes(st.session_state.username)
+    if my_data:
+        for r in my_data:
+            with st.expander(r['recipe_name']):
+                st.write(r['recipe_content'])
+    else:
+        st.info("Нямате запазени рецепти.")
+
+# --- ОСНОВЕН ИНТЕРФЕЙС (СЛЕД ЛОГИН) ---
 try:
     API_KEY = st.secrets["GEMINI_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -590,8 +597,8 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
     else:
         with st.spinner("🧑‍🍳 Шеф-готвачът обмисля варианти..."):
             try:
-                # Използваме gemini-1.5-flash за стабилност
-                model = genai.GenerativeModel('gemini-2.5-flash')
+                # ВАЖНО: Използваме правилния модел 1.5
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 prompt = f"""
                 Ти си професионален Zero-Waste готвач. Твоята задача е:
                 1. ВАЛИДАЦИЯ: Анализирай "{ingredients_input if ingredients_input else "снимката"}". Ако не е храна, кажи ГРЕШКА:НЕХРАНИТЕЛНИ_ДАННИ.
@@ -649,14 +656,9 @@ if st.session_state.recipes_list:
         recipe_content = "\n".join(lines[1:]) if "Име:" in lines[0] else selected_recipe
         st.markdown(f'<div class="recipe-card">{recipe_content}</div>', unsafe_allow_html=True)
         
-        # ЛОГИКА ЗА ЗАПИСВАНЕ
-        if st.session_state.logged_in:
-            if st.button(f"💾 Запази '{current_name}' в профила", use_container_width=True):
-                if save_recipe_to_db(st.session_state.username, current_name, recipe_content):
-                    st.toast("✅ Рецептата е запазена!", icon="⭐")
-        else:
-            st.warning("🔒 Трябва да влезете в профила си, за да запазите тази рецепта.")
-            st.info("Използвайте страничното меню за вход или регистрация.")
+        if st.button(f"💾 Запази '{current_name}' в профила", use_container_width=True):
+            if save_recipe_to_db(st.session_state.username, current_name, recipe_content):
+                st.toast("✅ Рецептата е запазена!", icon="⭐")
 
 st.markdown("---")
 st.caption("Zero-Waste Chef AI | 2026")
