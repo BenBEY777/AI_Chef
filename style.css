@@ -148,9 +148,19 @@ div.stButton > button:hover {
 
 /* СКРИВАНЕ НА STREAMLIT ЕЛЕМЕНТИ */
 
-/* 1. Скрива горната лента (Share, Fork, GitHub) */
-header {
-    visibility: hidden;
+/* Скрива иконите вдясно, но оставя стрелката за менюто вляво видима */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+}
+
+header[data-testid="stHeader"] > div:first-child {
+    display: none; /* Скрива Fork, GitHub и т.н. */
+}
+
+/* Прави стрелката на менюто видима и я оцветява, за да се вижда на тъмен фон */
+button[data-testid="sidebar-button"] {
+    visibility: visible !important;
+    color: white !important;
 }
 
 /* 2. Скрива червения бутон "Hosted with Streamlit" */
