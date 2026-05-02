@@ -146,5 +146,37 @@ div.stButton > button:hover {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* СКРИВАНЕ НА STREAMLIT ЕЛЕМЕНТИ */
+
+/* 1. Скрива горната лента (Share, Fork, GitHub) */
+header {
+    visibility: hidden;
+}
+
+/* 2. Скрива червения бутон "Hosted with Streamlit" */
+.stAppDeployButton {
+    display: none !important;
+}
+
+/* 3. Скрива иконата на профила и "Created by..." долу вдясно */
+div[data-testid="stStatusWidget"] {
+    display: none !important;
+}
+
+/* 4. Скрива фуутъра "Made with Streamlit" */
+footer {
+    visibility: hidden;
+}
+
+/* 5. Скрива главното меню (трите чертички) */
+#MainMenu {
+    visibility: hidden;
+}
+
+/* 6. Премахва празното място отгоре и намества съдържанието */
+.block-container {
+    padding-top: 2rem;
+}
+
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
