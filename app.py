@@ -543,7 +543,6 @@ if not st.session_state.logged_in:
                     st.success("Успешно! Сега влезте от таб 'Вход'.")
                 else:
                     st.error("Името е заето.")
-    st.stop() # Спираме до тук, ако не е логнат
 
 # --- СТРАНИЧНО МЕНЮ (САМО ЗА ЛОГНАТИ) ---
 with st.sidebar:
