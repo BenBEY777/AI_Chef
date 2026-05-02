@@ -188,6 +188,6 @@ footer {
     padding-top: 2rem;
 }
 
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
+#MainMenu {visibility: visible;}
+footer {visibility: visible;}
 
