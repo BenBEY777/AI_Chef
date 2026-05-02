@@ -241,6 +241,28 @@ import hashlib
 # 1. Настройка на страницата
 st.set_page_config(page_title="Zero-Waste Chef", page_icon="♻️", layout="centered")
 
+# --- ДОБАВИ ТОЗИ БЛОК ТУК, ЗА ДА СКРИЕШ ЕЛЕМЕНТИТЕ ---
+st.markdown("""
+    <style>
+    /* Скрива горната лента (Share, Fork, GitHub) */
+    header {visibility: hidden;}
+    
+    /* Скрива червеното лого/бутон долу вдясно (Deploy button) */
+    .stAppDeployButton {display: none;}
+    
+    /* Скрива фуутъра "Made with Streamlit" */
+    footer {visibility: hidden;}
+    
+    /* Скрива бутона Manage App за теб (в инкогнито той и без това го няма) */
+    #MainMenu {visibility: hidden;}
+    
+    /* Намалява празното пространство отгоре, след като скрихме хедъра */
+    .block-container {
+        padding-top: 2rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # --- ФУНКЦИИ ЗА БАЗА ДАННИ (SUPABASE) ---
 def get_supabase_client():
     url: str = st.secrets["SUPABASE_URL"]
