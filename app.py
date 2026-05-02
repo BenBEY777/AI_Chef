@@ -553,9 +553,9 @@ with st.sidebar:
         
         st.markdown("---")
         st.subheader("📚 Моите рецепти")
-        my_data = get_saved_recipes(st.session_state.username)
-        if my_data:
-            for r in my_data:
+        my_data_sidebar = get_saved_recipes(st.session_state.username)
+        if my_data_sidebar:
+            for r in my_data_sidebar:
                 with st.expander(r['recipe_name']):
                     st.write(r['recipe_content'])
         else:
@@ -570,6 +570,18 @@ except Exception:
     st.stop()
 
 st.title("♻️ Zero-Waste AI Готвач")
+
+# --- БЪРЗ ДОСТЪП (ПОКАЗВА СЕ САМО АКО Е ЛОГНАТ) ---
+if st.session_state.logged_in:
+    with st.expander("📂 Бърз достъп до моите запазени рецепти"):
+        my_data_main = get_saved_recipes(st.session_state.username)
+        if my_data_main:
+            for r in my_data_main:
+                with st.expander(f"📖 {r['recipe_name']}"):
+                    st.write(r['recipe_content'])
+        else:
+            st.write("Все още нямаш запазени рецепти.")
+
 st.write("Превърни остатъците в професионално ястие.")
 
 # Входни данни
@@ -594,6 +606,7 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
     else:
         with st.spinner("🧑‍🍳 Шеф-готвачът обмисля варианти..."):
             try:
+                # Корекция на модела към съществуваща версия
                 model = genai.GenerativeModel('gemini-2.5-flash')
                 prompt = f"""
                 Ти си професионален Zero-Waste готвач. Твоята задача е:
@@ -623,7 +636,7 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
             except Exception as e:
                 st.error(f"Грешка при генериране: {e}")
 
-# Показване на рецепти
+# Показване на резултати от генериране
 if st.session_state.recipes_list:
     st.markdown("---")
     st.markdown("### ✨ Избери рецепта:")
@@ -658,8 +671,7 @@ if st.session_state.recipes_list:
                 if save_recipe_to_db(st.session_state.username, current_name, recipe_content):
                     st.toast("✅ Рецептата е запазена!", icon="⭐")
         else:
-            # Тук е промяната: Ако не е логнат, показваме съобщение и форма
-            st.warning("🔒 Трябва да влезте в профила си, за да запазите тази рецепта.")
+            st.warning("🔒 Трябва да влезете в профила си, за да запазите тази рецепта.")
             with st.expander("🔑 Влез или се Регистрирай тук"):
                 t1, t2 = st.tabs(["Вход", "Регистрация"])
                 with t1:
@@ -669,7 +681,6 @@ if st.session_state.recipes_list:
                         if login_user(u, p):
                             st.session_state.logged_in = True
                             st.session_state.username = u
-                            # След успешен вход, автоматично записваме рецептата
                             save_recipe_to_db(u, current_name, recipe_content)
                             st.success("Успешен вход! Рецептата е запазена.")
                             st.rerun()

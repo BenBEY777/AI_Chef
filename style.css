@@ -159,8 +159,10 @@ header[data-testid="stHeader"] > div:first-child {
 
 /* Прави стрелката на менюто видима и я оцветява, за да се вижда на тъмен фон */
 button[data-testid="sidebar-button"] {
+   display: block !important;
     visibility: visible !important;
-    color: white !important;
+    background-color: #4CAF50 !important;
+    border-radius: 50% !important;
 }
 
 /* 2. Скрива червения бутон "Hosted with Streamlit" */
