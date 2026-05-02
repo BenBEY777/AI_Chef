@@ -180,7 +180,7 @@ footer {
 
 /* 5. Скрива главното меню (трите чертички) */
 #MainMenu {
-    visibility: hidden;
+    visibility: visible;
 }
 
 /* 6. Премахва празното място отгоре и намества съдържанието */
@@ -190,3 +190,4 @@ footer {
 
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
+
