@@ -1,32 +1,35 @@
- style.css
- .stApp { 
-     background-color: #0e1117; 
-     color: #e0e0e0; 
- } 
+/* style.css */
 
-/* /* Стилизиране на заглавието  */
- h1 { 
+/* Глобални настройки - Тъмна тема */
+.stApp { 
+    background-color: #0e1117; 
+    color: #e0e0e0; 
+} 
+
+/* Стилизиране на заглавието */
+h1 { 
     color: #4CAF50 !important;
     font-family: 'Helvetica Neue', sans-serif;
     font-weight: 800; 
-     text-align: center; 
+    text-align: center; 
     padding-bottom: 20px; 
     text-transform: uppercase; 
     letter-spacing: 2px; 
- } 
+} 
 
-/* /*Стилизиране на текстовите полета */
- .stTextArea textarea { 
-     background-color: #161b22 !important; 
-     color: #ffffff !important; 
-     border: 1px solid #30363d !important; 
-     border-radius: 12px !important; 
-     font-size: 16px; 
- } 
+/* Стилизиране на текстовите полета */
+.stTextArea textarea, .stTextInput input { 
+    background-color: #161b22 !important; 
+    color: #ffffff !important; 
+    border: 1px solid #30363d !important; 
+    border-radius: 12px !important; 
+    font-size: 16px; 
+} 
+
 /* Главният бутон */
 div.stButton > button:first-child { 
     background: linear-gradient(90deg, #4CAF50 0%, #2E7D32 100%);
-    color: white;
+    color: white !important;
     border: none;
     padding: 15px 30px;
     font-size: 18px;
@@ -44,7 +47,7 @@ div.stButton > button:first-child:hover {
     background: linear-gradient(90deg, #66BB6A 0%, #43A047 100%);
 }
 
-/* /*Карта за рецептата */
+/* Карта за рецептата */
 .recipe-card {
     background-color: #1c2128;
     padding: 30px;
@@ -56,8 +59,69 @@ div.stButton > button:first-child:hover {
     color: #f0f0f0;
 }
 
-/* /* Скриване на Streamlit елементи */
+/* Слайдбар (Sidebar) - Оправяне на цветовете */
+section[data-testid="stSidebar"] {
+    background-color: #161b22 !important;
+    border-right: 1px solid #30363d !important;
+}
+
+/* Текст в слайдбара */
+section[data-testid="stSidebar"] .stMarkdown, 
+section[data-testid="stSidebar"] label, 
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span {
+    color: #e0e0e0 !important;
+}
+
+/* Зона за качване на снимки */
+[data-testid="stFileUploadDropzone"] {
+    background-color: #161b22 !important;
+    border: 2px dashed #30363d !important;
+    border-radius: 12px !important;
+}
+
+/* Скриване на Streamlit елементи */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
+header {background-color: transparent !important;}
 
-/*----------------------------------------------------- */
+/* тел */
+
+@media (max-width: 768px) {
+    /* Намаляваме заглавието, за да не заема целия екран */
+    h1 {
+        font-size: 1.5rem !important;
+        letter-spacing: 1px;
+    }
+
+    /* Намаляваме отстъпите в картата на рецептата */
+    .recipe-card {
+        padding: 15px;
+        font-size: 14px;
+        border-left: 5px solid #4CAF50;
+    }
+
+    /* Правим бутона по-компактен */
+    div.stButton > button:first-child {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+
+    /* Форсираме тъмен фон на мобилния overlay (менюто) */
+    div[role="dialog"] {
+        background-color: #0e1117 !important;
+    }
+    
+    /* Оправяме широчината на контейнера на телефона */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    /* Бутонът за отваряне на менюто (стрелката) на телефона */
+    button[data-testid="sidebar-button"] {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        border-radius: 50% !important;
+    }
+}
