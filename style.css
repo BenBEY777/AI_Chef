@@ -162,13 +162,49 @@ footer {visibility: hidden;}
 /* Форсиране на тъмна тема за Sidebar-а на всички устройства */
 section[data-testid="stSidebar"] {
     background-color: #1a1c24 !important; /* Тъмният цвят от десктоп версията */
+    border-right: 1px solid #30363d !important;
 }
 
 /* Оправяне на цвета на текста и табовете вътре в Sidebar-а */
 section[data-testid="stSidebar"] .stMarkdown, 
 section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] span {
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2 {
+    color: #e0e0e0 !important;
+}
+
+/* 2. Напълно тъмна секция за качване на снимки (File Uploader) */
+/* Контейнерът */
+[data-testid="stFileUploadDropzone"] {
+    background-color: #161b22 !important; /* Тъмен фон, малко по-тъмен от картата */
+    border: 2px dashed #30363d !important; /* Тъмна, прекъсната граница */
+    border-radius: 12px !important;
+}
+
+/* Бутонът "Upload" вътре */
+[data-testid="stFileUploadDropzone"] button {
+    background-color: #2e7d32 !important; /* Зелено, като основните бутони */
     color: white !important;
+    border-radius: 8px !important;
+    border: none !important;
+}
+
+/* Текстът под бутона (200MB, JPG, PNG) */
+[data-testid="stFileUploadDropzone"] .stMarkdown,
+[data-testid="stFileUploadDropzone"] div {
+    color: #a0a0a0 !important;
+}
+
+/* 3. Оправяне на мобилния overlay (когато слайдбарът се разпъва) */
+div[role="dialog"] {
+    background-color: #1a1c24 !important;
+}
+
+/* 4. Почистване на Streamlit Header-а на мобилни (да е прозрачен) */
+header[data-testid="stHeader"] {
+    background-color: transparent !important;
 }
 
 /* Специално за мобилния контейнер, който се разпъва */
