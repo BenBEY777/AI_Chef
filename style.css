@@ -63,156 +63,138 @@
 
 /*-----------------------------------------------------
 
-/* style.css - Оптимизиран светъл дизайн */
+/* style.css - Професионален Responsive Дизайн */
 
-/* style.css - Пълен оптимизиран светъл дизайн (Desktop & Mobile) */
-
-/* 1. Глобални настройки на приложението */
+/* 1. Глобална основа */
 .stApp {
-    background-color: #f8fafc !important; /* Мек светъл фон */
-    color: #1e293b !important; /* Тъмно сив текст за четимост */
+    background-color: #f8fafc !important;
+    color: #1e293b !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* 2. Заглавие (H1) */
+/* 2. Заглавие - Адаптивно */
 h1 {
-    color: #2e7d32 !important; /* Еко зелено */
-    font-family: 'Helvetica Neue', sans-serif;
-    font-weight: 800;
+    color: #1b5e20 !important; /* Още по-дълбоко зелено за премиум усещане */
+    font-weight: 800 !important;
     text-align: center;
-    padding-bottom: 20px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 2.2rem !important;
+    letter-spacing: -0.5px;
+    margin-bottom: 30px !important;
 }
 
-/* 3. Оправяне на текстови полета (Input & Textarea) */
-/* Това премахва черните полета в профила и основната част */
-.stTextArea textarea, .stTextInput input {
+/* 3. Премахване на всички черни полета (Fix за Desktop) */
+/* Таргетираме абсолютно всички полета за въвеждане */
+.stTextArea textarea, .stTextInput input, [data-baseweb="input"] {
     background-color: #ffffff !important; 
-    color: #0c5ad8 !important; 
-    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important; 
+    border: 1px solid #e2e8f0 !important;
     border-radius: 12px !important;
-    padding: 12px !important;
+    -webkit-text-fill-color: #1e293b !important; /* Fix за Safari/iOS */
 }
 
+/* Стилизиране на фокуса на полетата */
 .stTextArea textarea:focus, .stTextInput input:focus {
     border-color: #4CAF50 !important;
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2) !important;
-}
-
-/* Цвят на етикетите (Потребител, Парола и т.н.) */
-.stMarkdown label, .stMarkdown p {
-    color: #334155 !important;
-    font-weight: 500;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2) !important;
 }
 
 /* 4. Секция за качване на снимки (File Uploader) */
-/* Премахва тъмния правоъгълник на компютър */
 [data-testid="stFileUploadDropzone"] {
     background-color: #ffffff !important;
     border: 2px dashed #cbd5e1 !important;
     border-radius: 16px !important;
-    padding: 20px !important;
-    color: #475569 !important;
+    transition: all 0.3s ease;
 }
 
-[data-testid="stFileUploadDropzone"] .stMarkdown,
-[data-testid="stFileUploadDropzone"] div {
-    color: #475569 !important;
+[data-testid="stFileUploadDropzone"]:hover {
+    border-color: #4CAF50 !important;
+    background-color: #f0fdf4 !important;
 }
 
-/* 5. Главен бутон (Генерирай идеи) */
+/* 5. Главният бутон - Модерен и чист */
 div.stButton > button {
-    background: linear-gradient(90deg, #43a047 0%, #2e7d32 100%) !important;
+    background: linear-gradient(135deg, #43a047 0%, #1b5e20 100%) !important;
     color: white !important;
     border: none !important;
-    border-radius: 50px !important;
-    font-weight: bold !important;
-    font-size: 1.1rem !important;
-    padding: 10px 25px !important;
-    transition: 0.3s ease;
-    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    width: 100% !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
 }
 
-div.stButton > button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3) !important;
-}
-
-/* 6. Слайдбар (Sidebar) - Профил */
-section[data-testid="stSidebar"] {
+/* 6. Слайдбар (Sidebar) - Изчистен бял стил */
+[data-testid="stSidebar"] {
     background-color: #ffffff !important;
-    border-right: 1px solid #e2e8f0 !important;
+    border-right: 1px solid #f1f5f9 !important;
 }
 
-/* Цветове вътре в слайдбара */
-section[data-testid="stSidebar"] .stMarkdown, 
-section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] span,
-section[data-testid="stSidebar"] label,
-section[data-testid="stSidebar"] h1,
-section[data-testid="stSidebar"] h2,
-section[data-testid="stSidebar"] h3 {
-    color: #1e293b !important;
+/* Fix за текста в Профила */
+[data-testid="stSidebar"] .stMarkdown, 
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] p {
+    color: #334155 !important;
 }
 
-/* 7. Табове (Вход / Регистрация) */
+/* 7. Карта на рецептата (Card Design) */
+.recipe-card {
+    background-color: #ffffff !important;
+    padding: 24px;
+    border-radius: 24px;
+    border: 1px solid #f1f5f9;
+    color: #334155 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05) !important;
+    line-height: 1.6;
+    margin-top: 20px;
+}
+
+.recipe-card h3 {
+    color: #1b5e20 !important;
+    border-bottom: 2px solid #f0fdf4;
+    padding-bottom: 8px;
+}
+
+/* 8. Табове (Вход / Регистрация) */
 .stTabs [data-baseweb="tab-list"] {
     background-color: #f1f5f9 !important;
-    border-radius: 10px;
-    padding: 5px;
+    padding: 4px !important;
+    border-radius: 12px !important;
 }
 
 .stTabs [data-baseweb="tab"] {
-    color: #64748b;
-    border-radius: 8px;
+    border-radius: 8px !important;
+    color: #64748b !important;
 }
 
 .stTabs [aria-selected="true"] {
     background-color: #ffffff !important;
-    color: #2e7d32 !important;
-    font-weight: bold !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    color: #1b5e20 !important;
 }
 
-/* 8. Карта на рецептата (Recipe Card) */
-.recipe-card {
-    background-color: #ffffff !important;
-    padding: 30px;
-    border-radius: 20px;
-    border-left: 8px solid #4CAF50;
-    line-height: 1.8;
-    color: #334155 !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    margin-top: 25px;
-    white-space: pre-wrap;
-}
-
-.recipe-card h3 {
-    color: #2e7d32 !important;
-    font-weight: bold !important;
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 10px;
-}
-
-/* 9. Мобилни настройки */
-button[data-testid="sidebar-button"] {
-    background-color: #2e7d32 !important;
-    color: white !important;
-    border-radius: 50% !important;
-}
-
-div[role="dialog"] {
-    background-color: #ffffff !important;
-}
-
-/* 10. Почистване на интерфейса */
+/* 9. Скриване на системни елементи */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
-header[data-testid="stHeader"] { background-color: transparent !important; }
+header {background-color: transparent !important;}
 
+/* 10. АДАПТИВНОСТ (MOBILE FIXES) */
 @media (max-width: 768px) {
-    h1 { font-size: 1.8rem !important; }
-    .stApp { padding: 10px; }
-    section[data-testid="stSidebar"] { width: 85vw !important; }
+    h1 {
+        font-size: 1.6rem !important;
+        margin-top: 20px !important;
+    }
+    
+    /* Оправяне на белия текст върху бял фон на мобилни бутони */
+    .stApp {
+        padding: 0.5rem !important;
+    }
+
+    /* Правим мобилното меню (Sidebar) да изглежда като част от ОС */
+    div[role="dialog"] {
+        background-color: #ffffff !important;
+    }
+
+    /* По-големи полета за лесно докосване */
+    .stTextArea textarea, .stTextInput input {
+        font-size: 16px !important;
+    }
 }
