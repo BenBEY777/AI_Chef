@@ -89,7 +89,7 @@ h1 {
 /* Това премахва черните полета в профила и основната част */
 .stTextArea textarea, .stTextInput input {
     background-color: #ffffff !important; 
-    color: #1e293b !important; 
+    color: #0c5ad8 !important; 
     border: 1px solid #cbd5e1 !important;
     border-radius: 12px !important;
     padding: 12px !important;
