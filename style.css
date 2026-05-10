@@ -159,3 +159,25 @@ button[data-testid="sidebar-button"] {
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 
+/* Форсиране на тъмна тема за Sidebar-а на всички устройства */
+section[data-testid="stSidebar"] {
+    background-color: #1a1c24 !important; /* Тъмният цвят от десктоп версията */
+}
+
+/* Оправяне на цвета на текста и табовете вътре в Sidebar-а */
+section[data-testid="stSidebar"] .stMarkdown, 
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span {
+    color: white !important;
+}
+
+/* Специално за мобилния контейнер, който се разпъва */
+div[role="dialog"] {
+    background-color: #1a1c24 !important;
+}
+
+/* Оправяне на белия фон на табовете (Вход/Регистрация) */
+.stTabs [data-baseweb="tab-list"] {
+    background-color: transparent !important;
+}
+
