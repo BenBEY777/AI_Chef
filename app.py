@@ -114,7 +114,7 @@ with st.sidebar:
         if my_data_sidebar:
             for r in my_data_sidebar:
                 with st.expander(r['recipe_name']):
-                    st.write(r['recipe_content'])
+                    st.markdown(r['recipe_content'])
         else:
             st.write("Все още нямаш запазени рецепти.")
 
@@ -133,7 +133,7 @@ if st.session_state.logged_in:
         if my_data_main:
             for r in my_data_main:
                 with st.expander(f"📖 {r['recipe_name']}"):
-                    st.write(r['recipe_content'])
+                    st.markdown(r['recipe_content'])
         else:
             st.write("Все още нямаш запазени рецепти.")
 
@@ -161,27 +161,30 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
     else:
         with st.spinner("🧑‍🍳 Шеф-готвачът обмисля варианти..."):
             try:
+                # Използваме стабилния и бърз модел за структуриран текст
                 model = genai.GenerativeModel('gemini-2.5-flash')
                 prompt = f"""
                 Ти си професионален Zero-Waste готвач. Твоята задача е:
-                1. ВАЛИДАЦИЯ: Анализирай "{ingredients_input if ingredients_input else "снимката"}". Ако не е храна, кажи ГРЕШКА:НЕХРАНИТЕЛНИ_ДАННИ.
-                2. ГЕНЕРИРАНЕ: Генерирай точно 3 уникални идеи за рецепти на български език въз основа на продуктите. 
+                1. ВАЛИДАЦИЯ: Анализирай "{ingredients_input if ingredients_input else "снимката"}". Ако не е храна, върни само думата ГРЕШКА:НЕХРАНИТЕЛНИ_ДАННИ.
+                2. ГЕНЕРИРАНЕ: Генерирай точно 3 уникални и напълно различни кулинарни идеи на български език въз основа на предоставените продукти. 
                 
-                ВАЖНО ЗА ФОРМАТА:
-                - Разделяй трите рецепти ОТРЕЗНО чрез маркера ###РЕЦЕПТА### на нов ред.
-                - За всяка рецепта започни директно с Име: [Име]
-                - Използвай Markdown списъци: '-' за продукти и '1.' за стъпки. Всяка съставка и всяка стъпка трябва да са на нов ред.
+                СТРИКТНИ ИЗИСКВАНИЯ ЗА ОФОРМЛЕНИЕТО:
+                - Разделяй трите рецепти ЕДИНСТВЕНО чрез специалния маркер ###РЕЦЕПТА### поставен на самостоятелен нов ред.
+                - За всяка рецепта започни директно на първия ред с текст във формат: Име: [Име на ястието тук]
+                - Използвай стандартни Markdown прекъсвания за нов ред. Всяка съставка и всяка стъпка ТРЯБВА да са на отделен нов ред.
+                - Продуктите трябва да започват с тире и интервал за bulletpoint (например: - 100г ориз). Не слагай допълнителни тирета между съставките.
+                - Стъпките трябва да са номерирани (например: 1. Измийте продуктите.).
                 
-                Примерен формат:
-                Име: [Име на рецептата]
+                Примерен точен шаблон за ЕДНА рецепта:
+                Име: Печени Пилешки Крила с Ароматен Ориз
                 ### 🛒 Необходими продукти:
-                - Продукт 1
-                - Продукт 2
+                - Пилешки крила
+                - Ориз (100г)
                 ### 👨‍🍳 Начин на приготвяне:
-                1. Стъпка 1
-                2. Стъпка 2
+                1. Измийте и подсушете пилешките крила.
+                2. Подредете в тава за печене.
                 ### ♻️ Zero-Waste съвет:
-                [Твоят съвет]
+                Използвайте костите за домашен бульон.
                 ###РЕЦЕПТА###
                 """
                 content = [prompt]
@@ -192,9 +195,9 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
                     st.error("⚠️ Моля, въведете само хранителни продукти!")
                     st.session_state.recipes_list = []
                 else:
-                    # Разделяме текста на 3 части чрез специалния маркер
+                    # Разделяме отговора по специалния маркер
                     raw_parts = response.text.split('###РЕЦЕПТА###')
-                    st.session_state.recipes_list = [p.strip() for p in raw_parts if len(p.strip()) > 50][:3]
+                    st.session_state.recipes_list = [p.strip() for p in raw_parts if len(p.strip()) > 30][:3]
                     st.session_state.selected_index = None 
             except Exception as e:
                 st.error(f"Грешка при генериране: {e}")
@@ -204,11 +207,9 @@ if st.session_state.recipes_list:
     st.markdown("---")
     st.markdown("### ✨ Избери една от идеите на шеф-готвача:")
     
-    # Създаваме колони за 3-те бутона
     cols = st.columns(len(st.session_state.recipes_list))
     
     for idx, r_text in enumerate(st.session_state.recipes_list):
-        # Извличаме името на рецептата за етикет на бутона
         lines = r_text.split('\n')
         recipe_name = "Идея"
         for line in lines:
@@ -220,30 +221,30 @@ if st.session_state.recipes_list:
             if st.button(recipe_name, key=f"recipe_btn_{idx}", use_container_width=True):
                 st.session_state.selected_index = idx
 
-    # Показваме инструкциите само за ИЗБРАНАТА рецепта
+    # Коректно показване на селектираната рецепта с Markdown рендиране вътре в CSS обекта
     if st.session_state.selected_index is not None:
         selected_recipe = st.session_state.recipes_list[st.session_state.selected_index]
         
-        # Намираме името за заглавие
         current_name = "Рецепта"
         for line in selected_recipe.split('\n'):
             if "Име:" in line:
-                current_name = line.replace("Име:", "").replace("**", "").strip()
+                current_name = line.replace("Иme:", "").replace("Име:", "").replace("**", "").strip()
                 break
 
         st.markdown(f"## 📖 {current_name}")
         
-        # Подготвяме тялото на рецептата (махаме реда с Име:)
         display_lines = selected_recipe.split('\n')
         recipe_body = "\n".join(display_lines[1:]) if "Име:" in display_lines[0] else selected_recipe
 
-        # Показваме в стилизираната карта
-        st.markdown(f'<div class="recipe-card">{recipe_body}</div>', unsafe_allow_html=True)
+        # КЛЮЧОВА ПОПРАВКА: Поставяме контейнера и рендираме съдържанието чрез st.markdown, за да се спазят новите редове
+        st.markdown('<div class="recipe-card">', unsafe_allow_html=True)
+        st.markdown(recipe_body)
+        st.markdown('</div>', unsafe_allow_html=True)
         
         if st.session_state.logged_in:
             if st.button(f"💾 Запази '{current_name}' в профила", use_container_width=True):
                 if save_recipe_to_db(st.session_state.username, current_name, recipe_body):
-                    st.toast("✅ Рецептата е запазена!", icon="⭐")
+                    st.toast("✅ Рецептата е запазена успешно!", icon="⭐")
         else:
             st.warning("🔒 Трябва да влезете в профила си, за да запазите тази рецепта.")
             with st.expander("🔑 Влез или се Регистрирай тук"):
