@@ -151,7 +151,7 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
     else:
         with st.spinner("🧑‍🍳 Шеф-готвачът обмисля варианти..."):
             try:
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-2.5-flash')
                 prompt = f"""
                 Ти си професионален Zero-Waste готвач. Твоята задача е:
                 1. ВАЛИДАЦИЯ: Анализирай "{ingredients_input if ingredients_input else "снимката"}". Ако не е храна, върни само думата ГРЕШКА:НЕХРАНИТЕЛНИ_ДАННИ.
