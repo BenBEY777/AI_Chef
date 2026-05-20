@@ -161,26 +161,28 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
     else:
         with st.spinner("🧑‍🍳 Шеф-готвачът обмисля варианти..."):
             try:
-                model = genai.GenerativeModel('gemini-2.5-flash')
+                model = genai.GenerativeModel('gemini-2.0-flash')
                 prompt = f"""
                 Ти си професионален Zero-Waste готвач. Твоята задача е:
                 1. ВАЛИДАЦИЯ: Анализирай "{ingredients_input if ingredients_input else "снимката"}". Ако не е храна, кажи ГРЕШКА:НЕХРАНИТЕЛНИ_ДАННИ.
-                2. ГЕНЕРИРАНЕ: Генерирай точно 3 идеи за рецепти на български език въз основа на продуктите. Без уводни и заключителни думи от твоя страна.
+                2. ГЕНЕРИРАНЕ: Генерирай точно 3 уникални идеи за рецепти на български език въз основа на продуктите. 
                 
-                Използвай задължително следния Markdown формат за ВСЯКА рецепта и разделяй трите рецепти ОТРЕЗНО с три знака за равенство '===' на нов ред:
+                ВАЖНО ЗА ФОРМАТА:
+                - Разделяй трите рецепти ОТРЕЗНО чрез маркера ###РЕЦЕПТА### на нов ред.
+                - За всяка рецепта започни директно с Име: [Име]
+                - Използвай Markdown списъци: '-' за продукти и '1.' за стъпки. Всяка съставка и всяка стъпка трябва да са на нов ред.
                 
+                Примерен формат:
                 Име: [Име на рецептата]
                 ### 🛒 Необходими продукти:
-                - Първи продукт (на нов ред)
-                - Втори продукт (на нов ред)
-                
+                - Продукт 1
+                - Продукт 2
                 ### 👨‍🍳 Начин на приготвяне:
-                1. Първа стъпка (на нов ред)
-                2. Втора стъпка (на нов ред)
-                
+                1. Стъпка 1
+                2. Стъпка 2
                 ### ♻️ Zero-Waste съвет:
-                [Твоят съвет тук]
-                ===
+                [Твоят съвет]
+                ###РЕЦЕПТА###
                 """
                 content = [prompt]
                 if uploaded_file: content.append(image)
@@ -190,8 +192,9 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
                     st.error("⚠️ Моля, въведете само хранителни продукти!")
                     st.session_state.recipes_list = []
                 else:
-                    raw_parts = response.text.strip().split('---')
-                    st.session_state.recipes_list = [p.strip() for p in raw_parts if len(p.strip()) > 20][:3]
+                    # Разделяме текста на 3 части чрез специалния маркер
+                    raw_parts = response.text.split('###РЕЦЕПТА###')
+                    st.session_state.recipes_list = [p.strip() for p in raw_parts if len(p.strip()) > 50][:3]
                     st.session_state.selected_index = None 
             except Exception as e:
                 st.error(f"Грешка при генериране: {e}")
@@ -199,36 +202,47 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
 # Показване на резултати от генериране
 if st.session_state.recipes_list:
     st.markdown("---")
-    st.markdown("### ✨ Избери рецепта:")
+    st.markdown("### ✨ Избери една от идеите на шеф-готвача:")
+    
+    # Създаваме колони за 3-те бутона
     cols = st.columns(len(st.session_state.recipes_list))
+    
     for idx, r_text in enumerate(st.session_state.recipes_list):
+        # Извличаме името на рецептата за етикет на бутона
         lines = r_text.split('\n')
         recipe_name = "Идея"
         for line in lines:
             if "Име:" in line:
                 recipe_name = line.replace("Име:", "").replace("**", "").strip()
                 break
+        
         with cols[idx]:
-            if st.button(recipe_name, key=f"btn_{idx}", use_container_width=True):
+            if st.button(recipe_name, key=f"recipe_btn_{idx}", use_container_width=True):
                 st.session_state.selected_index = idx
 
+    # Показваме инструкциите само за ИЗБРАНАТА рецепта
     if st.session_state.selected_index is not None:
         selected_recipe = st.session_state.recipes_list[st.session_state.selected_index]
+        
+        # Намираме името за заглавие
         current_name = "Рецепта"
         for line in selected_recipe.split('\n'):
             if "Име:" in line:
                 current_name = line.replace("Име:", "").replace("**", "").strip()
                 break
 
-        st.markdown("---")
-        lines = selected_recipe.split('\n')
-        recipe_content = "\n".join(lines[1:]) if "Име:" in lines[0] else selected_recipe
-        st.markdown(f'<div class="recipe-card">{recipe_content}</div>', unsafe_allow_html=True)
+        st.markdown(f"## 📖 {current_name}")
         
+        # Подготвяме тялото на рецептата (махаме реда с Име:)
+        display_lines = selected_recipe.split('\n')
+        recipe_body = "\n".join(display_lines[1:]) if "Име:" in display_lines[0] else selected_recipe
 
+        # Показваме в стилизираната карта
+        st.markdown(f'<div class="recipe-card">{recipe_body}</div>', unsafe_allow_html=True)
+        
         if st.session_state.logged_in:
             if st.button(f"💾 Запази '{current_name}' в профила", use_container_width=True):
-                if save_recipe_to_db(st.session_state.username, current_name, recipe_content):
+                if save_recipe_to_db(st.session_state.username, current_name, recipe_body):
                     st.toast("✅ Рецептата е запазена!", icon="⭐")
         else:
             st.warning("🔒 Трябва да влезете в профила си, за да запазите тази рецепта.")
@@ -241,7 +255,7 @@ if st.session_state.recipes_list:
                         if login_user(u, p):
                             st.session_state.logged_in = True
                             st.session_state.username = u
-                            save_recipe_to_db(u, current_name, recipe_content)
+                            save_recipe_to_db(u, current_name, recipe_body)
                             st.success("Успешен вход! Рецептата е запазена.")
                             st.rerun()
                         else:
