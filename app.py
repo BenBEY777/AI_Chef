@@ -114,7 +114,7 @@ with st.sidebar:
         if my_data_sidebar:
             for r in my_data_sidebar:
                 with st.expander(r['recipe_name']):
-                    st.markdown(r['recipe_content'])
+                    st.markdown(f'<div class="recipe-card">{r["recipe_content"]}</div>', unsafe_allow_html=True)
         else:
             st.write("Все още нямаш запазени рецепти.")
 
@@ -133,7 +133,7 @@ if st.session_state.logged_in:
         if my_data_main:
             for r in my_data_main:
                 with st.expander(f"📖 {r['recipe_name']}"):
-                    st.markdown(r['recipe_content'])
+                    st.markdown(f'<div class="recipe-card">{r["recipe_content"]}</div>', unsafe_allow_html=True)
         else:
             st.write("Все още нямаш запазени рецепти.")
 
@@ -161,7 +161,6 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
     else:
         with st.spinner("🧑‍🍳 Шеф-готвачът обмисля варианти..."):
             try:
-                # Използваме стабилния и бърз модел за структуриран текст
                 model = genai.GenerativeModel('gemini-2.5-flash')
                 prompt = f"""
                 Ти си професионален Zero-Waste готвач. Твоята задача е:
@@ -195,7 +194,6 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
                     st.error("⚠️ Моля, въведете само хранителни продукти!")
                     st.session_state.recipes_list = []
                 else:
-                    # Разделяме отговора по специалния маркер
                     raw_parts = response.text.split('###РЕЦЕПТА###')
                     st.session_state.recipes_list = [p.strip() for p in raw_parts if len(p.strip()) > 30][:3]
                     st.session_state.selected_index = None 
@@ -221,14 +219,14 @@ if st.session_state.recipes_list:
             if st.button(recipe_name, key=f"recipe_btn_{idx}", use_container_width=True):
                 st.session_state.selected_index = idx
 
-    # Коректно показване на селектираната рецепта с Markdown рендиране вътре в CSS обекта
+    # ПОКАЗВАНЕ НА РЕЦЕПТАТА ИЗЦЯЛО ВЪТРЕ В КОНТЕЙНЕРА
     if st.session_state.selected_index is not None:
         selected_recipe = st.session_state.recipes_list[st.session_state.selected_index]
         
         current_name = "Рецепта"
         for line in selected_recipe.split('\n'):
             if "Име:" in line:
-                current_name = line.replace("Иme:", "").replace("Име:", "").replace("**", "").strip()
+                current_name = line.replace("Име:", "").replace("**", "").strip()
                 break
 
         st.markdown(f"## 📖 {current_name}")
@@ -236,10 +234,8 @@ if st.session_state.recipes_list:
         display_lines = selected_recipe.split('\n')
         recipe_body = "\n".join(display_lines[1:]) if "Име:" in display_lines[0] else selected_recipe
 
-        # КЛЮЧОВА ПОПРАВКА: Поставяме контейнера и рендираме съдържанието чрез st.markdown, за да се спазят новите редове
-        st.markdown('<div class="recipe-card">', unsafe_allow_html=True)
-        st.markdown(recipe_body)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Промяната е тук: Цялото тяло се предава директно вътре в HTML контейнера, без накъсване
+        st.markdown(f'<div class="recipe-card">{recipe_body}</div>', unsafe_allow_html=True)
         
         if st.session_state.logged_in:
             if st.button(f"💾 Запази '{current_name}' в профила", use_container_width=True):
