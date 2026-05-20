@@ -107,16 +107,6 @@ with st.sidebar:
             st.session_state.logged_in = False
             st.session_state.username = ""
             st.rerun()
-        
-        st.markdown("---")
-        st.subheader("📚 Моите рецепти")
-        my_data_sidebar = get_saved_recipes(st.session_state.username)
-        if my_data_sidebar:
-            for r in my_data_sidebar:
-                with st.expander(r['recipe_name']):
-                    st.markdown(f'<div class="recipe-card">{r["recipe_content"]}</div>', unsafe_allow_html=True)
-        else:
-            st.write("Все още нямаш запазени рецепти.")
 
 try:
     API_KEY = st.secrets["GEMINI_API_KEY"]
@@ -161,7 +151,7 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
     else:
         with st.spinner("🧑‍🍳 Шеф-готвачът обмисля варианти..."):
             try:
-                model = genai.GenerativeModel('gemini-2.5-flash')
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 prompt = f"""
                 Ти си професионален Zero-Waste готвач. Твоята задача е:
                 1. ВАЛИДАЦИЯ: Анализирай "{ingredients_input if ingredients_input else "снимката"}". Ако не е храна, върни само думата ГРЕШКА:НЕХРАНИТЕЛНИ_ДАННИ.
@@ -234,7 +224,6 @@ if st.session_state.recipes_list:
         display_lines = selected_recipe.split('\n')
         recipe_body = "\n".join(display_lines[1:]) if "Име:" in display_lines[0] else selected_recipe
 
-        # Промяната е тук: Цялото тяло се предава директно вътре в HTML контейнера, без накъсване
         st.markdown(f'<div class="recipe-card">{recipe_body}</div>', unsafe_allow_html=True)
         
         if st.session_state.logged_in:
@@ -269,6 +258,7 @@ if st.session_state.recipes_list:
                             st.error("⚠️ Паролата трябва да бъде поне 6 символа.")
                         else:
                             if add_user(u_r, p_r):
+                                Relative = True
                                 st.success("Профилът е създаден! Сега влезте от съседния таб.")
                             else:
                                 st.error("Името е заето.")
