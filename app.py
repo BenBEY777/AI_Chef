@@ -47,7 +47,6 @@ def get_saved_recipes(username):
     res = supabase.table("saved_recipes").select("*").eq("username", username).execute()
     return res.data
 
-# НОВА ФУНКЦИЯ: Изтриване на рецепта по ID от Supabase
 def delete_recipe_from_db(recipe_id):
     try:
         supabase.table("saved_recipes").delete().eq("id", recipe_id).execute()
@@ -65,6 +64,9 @@ if 'recipes_list' not in st.session_state:
     st.session_state.recipes_list = []
 if 'selected_index' not in st.session_state:
     st.session_state.selected_index = None
+# Добавяме състояние, което да следи коя рецепта е маркирана за изтриване
+if 'recipe_to_delete' not in st.session_state:
+    st.session_state.recipe_to_delete = None
 
 # Прилагане на CSS
 def local_css(file_name):
@@ -115,6 +117,7 @@ with st.sidebar:
         if st.button("Изход", use_container_width=True):
             st.session_state.logged_in = False
             st.session_state.username = ""
+            st.session_state.recipe_to_delete = None
             st.rerun()
 
 try:
@@ -126,7 +129,7 @@ except Exception:
 
 st.title("♻️ Zero-Waste AI Готвач")
 
-# --- СЕКЦИЯ ЗАПАЗЕНИ РЕЦЕПТИ (С БУТОН ЗА ИЗТРИВАНЕ) ---
+# --- СЕКЦИЯ ЗАПАЗЕНИ РЕЦЕПТИ (ПОПРАВЕНО ИЗТРИВАНЕ) ---
 if st.session_state.logged_in:
     with st.expander("📂 Бърз достъп до моите запазени рецепти"):
         my_data_main = get_saved_recipes(st.session_state.username)
@@ -135,17 +138,24 @@ if st.session_state.logged_in:
                 with st.expander(f"📖 {r['recipe_name']}"):
                     st.markdown(f'<div class="recipe-card">{r["recipe_content"]}</div>', unsafe_allow_html=True)
                     
-                    # Бутон за изтриване с потвърждение
+                    # При натискане само маркираме рецептата в session_state
                     if st.button(f"🗑️ Изтрий '{r['recipe_name']}'", key=f"del_{r['id']}", use_container_width=True):
-                        st.warning("⚠️ Сигурни ли сте, че искате да изтриете рецептата?")
+                        st.session_state.recipe_to_delete = r['id']
+                        st.rerun()
+                    
+                    # Показваме прозореца за потвърждение само за маркираната рецепта
+                    if st.session_state.recipe_to_delete == r['id']:
+                        st.warning(f"⚠️ Сигурни ли сте, че искате да изтриете '{r['recipe_name']}'?")
                         col_yes, col_no = st.columns(2)
                         with col_yes:
                             if st.button("Да, изтрий", key=f"confirm_yes_{r['id']}", use_container_width=True):
                                 if delete_recipe_from_db(r['id']):
+                                    st.session_state.recipe_to_delete = None # Нулираме избора
                                     st.toast("Рецептата беше изтрита!", icon="🗑️")
-                                    st.rerun()
+                                    st.rerun() # Сега рефрешът ще обнови списъка перфектно
                         with col_no:
                             if st.button("Отказ", key=f"confirm_no_{r['id']}", use_container_width=True):
+                                st.session_state.recipe_to_delete = None
                                 st.rerun()
         else:
             st.write("Все още нямаш запазени рецепти.")
@@ -156,7 +166,7 @@ st.write("Превърни остатъците в професионално я
 col1, col2 = st.columns(2)
 with col1:
     ingredients_input = st.text_area(
-        "Остатъци and продукти:", 
+        "Остатъци и продукти:", 
         placeholder="напр. пиле, увехнал магданоз...",
         height=150
     )
@@ -182,7 +192,7 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
                 
                 СТРИКТНИ ИЗИСКВАНИЯ ЗА ОФОРМЛЕНИЕТО:
                 - Разделяй трите рецепти ЕДИНСТВЕНО чрез специалния маркер ###РЕЦЕПТА### поставен на самостоятелен нов ред.
-                - За всяка рецепта започни директно на първия ред с текст във формат: Име: [Име на ястието тук]
+                - За всяка рецепта започни директно на първия ред with формат: Име: [Име на ястието тук]
                 - Използвай стандартни Markdown прекъсвания за нов ред. Всяка съставка и всяка стъпка ТРЯБВА да са на отделен нов ред.
                 - Продуктите трябва да започват с тире и интервал за bulletpoint (например: - 100г ориз). Не слагай допълнителни тирета между съставките.
                 - Стъпките трябва да са номерирани (например: 1. Измийте продуктите.).
