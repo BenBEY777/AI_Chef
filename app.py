@@ -47,6 +47,15 @@ def get_saved_recipes(username):
     res = supabase.table("saved_recipes").select("*").eq("username", username).execute()
     return res.data
 
+# НОВА ФУНКЦИЯ: Изтриване на рецепта по ID от Supabase
+def delete_recipe_from_db(recipe_id):
+    try:
+        supabase.table("saved_recipes").delete().eq("id", recipe_id).execute()
+        return True
+    except Exception as e:
+        st.error(f"Грешка при изтриване: {e}")
+        return False
+
 # --- ИНИЦИАЛИЗАЦИЯ НА СЪСТОЯНИЕТО ---
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -117,6 +126,7 @@ except Exception:
 
 st.title("♻️ Zero-Waste AI Готвач")
 
+# --- СЕКЦИЯ ЗАПАЗЕНИ РЕЦЕПТИ (С БУТОН ЗА ИЗТРИВАНЕ) ---
 if st.session_state.logged_in:
     with st.expander("📂 Бърз достъп до моите запазени рецепти"):
         my_data_main = get_saved_recipes(st.session_state.username)
@@ -124,6 +134,19 @@ if st.session_state.logged_in:
             for r in my_data_main:
                 with st.expander(f"📖 {r['recipe_name']}"):
                     st.markdown(f'<div class="recipe-card">{r["recipe_content"]}</div>', unsafe_allow_html=True)
+                    
+                    # Бутон за изтриване с потвърждение
+                    if st.button(f"🗑️ Изтрий '{r['recipe_name']}'", key=f"del_{r['id']}", use_container_width=True):
+                        st.warning("⚠️ Сигурни ли сте, че искате да изтриете рецептата?")
+                        col_yes, col_no = st.columns(2)
+                        with col_yes:
+                            if st.button("Да, изтрий", key=f"confirm_yes_{r['id']}", use_container_width=True):
+                                if delete_recipe_from_db(r['id']):
+                                    st.toast("Рецептата беше изтрита!", icon="🗑️")
+                                    st.rerun()
+                        with col_no:
+                            if st.button("Отказ", key=f"confirm_no_{r['id']}", use_container_width=True):
+                                st.rerun()
         else:
             st.write("Все още нямаш запазени рецепти.")
 
@@ -133,7 +156,7 @@ st.write("Превърни остатъците в професионално я
 col1, col2 = st.columns(2)
 with col1:
     ingredients_input = st.text_area(
-        "Остатъци и продукти:", 
+        "Остатъци and продукти:", 
         placeholder="напр. пиле, увехнал магданоз...",
         height=150
     )
@@ -230,7 +253,7 @@ if st.session_state.recipes_list:
             if st.button(f"💾 Запази '{current_name}' в профила", use_container_width=True):
                 if save_recipe_to_db(st.session_state.username, current_name, recipe_body):
                     st.toast("✅ Рецептата е запазена успешно!", icon="⭐")
-                    st.rerun()  # КЛЮЧОВА ПРОМЯНА: Незабавно рестартира страницата, за да се заредят данните в горния списък
+                    st.rerun()
         else:
             st.warning("🔒 Трябва да влезете в профила си, за да запазите тази рецепта.")
             with st.expander("🔑 Влез или се Регистрирай тук"):
