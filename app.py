@@ -230,6 +230,7 @@ if st.session_state.recipes_list:
             if st.button(f"💾 Запази '{current_name}' в профила", use_container_width=True):
                 if save_recipe_to_db(st.session_state.username, current_name, recipe_body):
                     st.toast("✅ Рецептата е запазена успешно!", icon="⭐")
+                    st.rerun()  # КЛЮЧОВА ПРОМЯНА: Незабавно рестартира страницата, за да се заредят данните в горния списък
         else:
             st.warning("🔒 Трябва да влезете в профила си, за да запазите тази рецепта.")
             with st.expander("🔑 Влез или се Регистрирай тук"):
@@ -258,7 +259,6 @@ if st.session_state.recipes_list:
                             st.error("⚠️ Паролата трябва да бъде поне 6 символа.")
                         else:
                             if add_user(u_r, p_r):
-                                Relative = True
                                 st.success("Профилът е създаден! Сега влезте от съседния таб.")
                             else:
                                 st.error("Името е заето.")
