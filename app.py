@@ -18,10 +18,15 @@ supabase = get_supabase_client()
 def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
-def add_user(username, password):
+# ОБНОВЕНА: Функцията вече записва и email в таблицата
+def add_user(username, email, password):
     hashed_pw = make_hashes(password)
     try:
-        supabase.table("users").insert({"username": username, "password": hashed_pw}).execute()
+        supabase.table("users").insert({
+            "username": username, 
+            "email": email, 
+            "password": hashed_pw
+        }).execute()
         return True
     except Exception:
         return False
@@ -64,7 +69,6 @@ if 'recipes_list' not in st.session_state:
     st.session_state.recipes_list = []
 if 'selected_index' not in st.session_state:
     st.session_state.selected_index = None
-# Добавяме състояние, което да следи коя рецепта е маркирана за изтриване
 if 'recipe_to_delete' not in st.session_state:
     st.session_state.recipe_to_delete = None
 
@@ -99,19 +103,22 @@ with st.sidebar:
                     
         with auth_tab2:
             u_reg = st.text_input("Нов потребител", key="sidebar_u_reg")
+            email_reg = st.text_input("Имейл адрес", key="sidebar_email_reg") # ДОБАВЕНО ПОЛЕ
             p_reg = st.text_input("Нова парола", type="password", key="sidebar_p_reg")
             if st.button("Създай профил", use_container_width=True):
-                if not u_reg or not p_reg:
+                if not u_reg or not email_reg or not p_reg: # ОБНОВЕНА ПРОВЕРКА
                     st.error("⚠️ Моля, попълнете всички полета.")
                 elif len(u_reg) < 3:
                     st.error("⚠️ Потребителското име трябва да бъде поне 3 символа.")
+                elif "@" not in email_reg or "." not in email_reg: # БАЗОВА ПРОВЕРКА ЗА ИМЕЙЛ
+                    st.error("⚠️ Моля, въведете валиден имейл адрес.")
                 elif len(p_reg) < 6:
                     st.error("⚠️ Паролата трябва да бъде поне 6 символа.")
                 else:
-                    if add_user(u_reg, p_reg):
+                    if add_user(u_reg, email_reg, p_reg): # ПОДАВА СЕ EMAIL
                         st.success("Успешно! Вече можете да влезете.")
                     else:
-                        st.error("Името е заето.")
+                        st.error("Името или имейлът вече се използват.")
     else:
         st.success(f"Здравей, {st.session_state.username}!")
         if st.button("Изход", use_container_width=True):
@@ -129,7 +136,7 @@ except Exception:
 
 st.title("♻️ Zero-Waste AI Готвач")
 
-# --- СЕКЦИЯ ЗАПАЗЕНИ РЕЦЕПТИ (ПОПРАВЕНО ИЗТРИВАНЕ) ---
+# --- СЕКЦИЯ ЗАПАЗЕНИ РЕЦЕПТИ ---
 if st.session_state.logged_in:
     with st.expander("📂 Бърз достъп до моите запазени рецепти"):
         my_data_main = get_saved_recipes(st.session_state.username)
@@ -138,21 +145,19 @@ if st.session_state.logged_in:
                 with st.expander(f"📖 {r['recipe_name']}"):
                     st.markdown(f'<div class="recipe-card">{r["recipe_content"]}</div>', unsafe_allow_html=True)
                     
-                    # При натискане само маркираме рецептата в session_state
                     if st.button(f"🗑️ Изтрий '{r['recipe_name']}'", key=f"del_{r['id']}", use_container_width=True):
                         st.session_state.recipe_to_delete = r['id']
                         st.rerun()
                     
-                    # Показваме прозореца за потвърждение само за маркираната рецепта
                     if st.session_state.recipe_to_delete == r['id']:
                         st.warning(f"⚠️ Сигурни ли сте, че искате да изтриете '{r['recipe_name']}'?")
                         col_yes, col_no = st.columns(2)
                         with col_yes:
                             if st.button("Да, изтрий", key=f"confirm_yes_{r['id']}", use_container_width=True):
                                 if delete_recipe_from_db(r['id']):
-                                    st.session_state.recipe_to_delete = None # Нулираме избора
+                                    st.session_state.recipe_to_delete = None
                                     st.toast("Рецептата беше изтрита!", icon="🗑️")
-                                    st.rerun() # Сега рефрешът ще обнови списъка перфектно
+                                    st.rerun()
                         with col_no:
                             if st.button("Отказ", key=f"confirm_no_{r['id']}", use_container_width=True):
                                 st.session_state.recipe_to_delete = None
@@ -192,7 +197,7 @@ if st.button("🚀 Генерирай идеи", use_container_width=True):
                 
                 СТРИКТНИ ИЗИСКВАНИЯ ЗА ОФОРМЛЕНИЕТО:
                 - Разделяй трите рецепти ЕДИНСТВЕНО чрез специалния маркер ###РЕЦЕПТА### поставен на самостоятелен нов ред.
-                - За всяка рецепта започни директно на първия ред with формат: Име: [Име на ястието тук]
+                - За всяка рецепта започни директно на първия ред във формат: Име: [Име на ястието тук]
                 - Използвай стандартни Markdown прекъсвания за нов ред. Всяка съставка и всяка стъпка ТРЯБВА да са на отделен нов ред.
                 - Продуктите трябва да започват с тире и интервал за bulletpoint (например: - 100г ориз). Не слагай допълнителни тирета между съставките.
                 - Стъпките трябва да са номерирани (например: 1. Измийте продуктите.).
@@ -242,7 +247,6 @@ if st.session_state.recipes_list:
             if st.button(recipe_name, key=f"recipe_btn_{idx}", use_container_width=True):
                 st.session_state.selected_index = idx
 
-    # ПОКАЗВАНЕ НА РЕЦЕПТАТА ИЗЦЯЛО ВЪТРЕ В КОНТЕЙНЕРА
     if st.session_state.selected_index is not None:
         selected_recipe = st.session_state.recipes_list[st.session_state.selected_index]
         
@@ -265,7 +269,7 @@ if st.session_state.recipes_list:
                     st.toast("✅ Рецептата е запазена успешно!", icon="⭐")
                     st.rerun()
         else:
-            st.warning("🔒 Трябва да влезете в профила си, за да запазите тази рецепта.")
+            st.warning("🔒 Тнябва да влезете в профила си, за да запазите тази рецепта.")
             with st.expander("🔑 Влез или се Регистрирай тук"):
                 t1, t2 = st.tabs(["Вход", "Регистрация"])
                 with t1:
@@ -282,19 +286,22 @@ if st.session_state.recipes_list:
                             st.error("Грешни данни.")
                 with t2:
                     u_r = st.text_input("Избери име", key="main_reg_u")
+                    em_r = st.text_input("Въведи имейл", key="main_reg_email") # ДОБАВЕНО ПОЛЕ В ОСНОВНАТА ФОРМА
                     p_r = st.text_input("Избери парола", type="password", key="main_reg_p")
                     if st.button("Създай акаунт", key="btn_main_reg"):
-                        if not u_r or not p_r:
+                        if not u_r or not em_r or not p_r:
                             st.error("⚠️ Моля, попълнете всички полета.")
                         elif len(u_r) < 3:
                             st.error("⚠️ Потребителското име трябва да бъде поне 3 символа.")
+                        elif "@" not in em_r or "." not in em_r:
+                            st.error("⚠️ Моля, въведете валиден имейл.")
                         elif len(p_r) < 6:
                             st.error("⚠️ Паролата трябва да бъде поне 6 символа.")
                         else:
-                            if add_user(u_r, p_r):
+                            if add_user(u_r, em_r, p_r): # ПОДАВА СЕ EMAIL
                                 st.success("Профилът е създаден! Сега влезте от съседния таб.")
                             else:
-                                st.error("Името е заето.")
+                                st.error("Името или имейлът вече са заети.")
 
 st.markdown("---")
 st.caption("Zero-Waste Chef AI | 2026")
